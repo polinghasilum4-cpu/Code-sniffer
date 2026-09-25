@@ -620,6 +620,236 @@ module.exports = async (req, res) => {
     favorite: true,
     createdAt: Date.now() - 86400000 * 2,
     updatedAt: Date.now() - 86400000 * 1,
-    views: 1500
+        views: 1500
+  },
+
+  {
+    id: 'sn_ai_faceswap',
+    title: 'Face Swap AI — Remaker.ai via Vercel API',
+    description: 'Tukar wajah 2 gambar via Remaker.ai. Client compress otomatis + server handle multipart upload, polling job, dan base64 output (bypass CDN protection).',
+    language: 'javascript',
+    tags: ['faceswap', 'ai', 'remaker', 'vercel', 'api'],
+    filename: 'faceswap.js',
+    code: `// ============================================================
+// CLIENT SIDE — auto-compress + upload ke API Vercel
+// ============================================================
+async function faceSwap(sourceFile, targetFile) {
+  // 1. Auto-compress biar gak kena limit Vercel 4.5 MB
+  const [srcC, tgtC] = await Promise.all([
+    compressImage(sourceFile),
+    compressImage(targetFile),
+  ]);
+
+  // 2. Kirim ke API sebagai multipart
+  const fd = new FormData();
+  fd.append('source', srcC);
+  fd.append('target', tgtC);
+
+  const res = await fetch(
+    'https://api-soundcloud.vercel.app/api/v2/faceswap',
+    { method: 'POST', body: fd }
+  );
+  const json = await res.json();
+  if (!res.ok || !json.success) {
+    throw new Error(json.error || 'Face swap gagal');
+  }
+  return json.data;
+}
+
+function compressImage(file, maxDim = 1280, quality = 0.72) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      let { width, height } = img;
+      if (width > maxDim || height > maxDim) {
+        const ratio = Math.min(maxDim / width, maxDim / height);
+        width = Math.round(width * ratio);
+        height = Math.round(height * ratio);
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+      canvas.toBlob((blob) => {
+        resolve(new File([blob], 'compressed.jpg', { type: 'image/jpeg' }));
+      }, 'image/jpeg', quality);
+    };
+    img.onerror = () => reject(new Error('Gagal load gambar'));
+    img.src = url;
+  });
+}
+
+// Usage
+const result = await faceSwap(sourceInput.files[0], targetInput.files[0]);
+document.querySelector('#preview').src =
+  result.outputDataUrl || result.outputUrls[0];
+
+// ============================================================
+// SERVER SIDE — Vercel API route (api/v2/faceswap.js)
+// ============================================================
+/*
+const axios = require('axios');
+const FormData = require('form-data');
+const { Readable } = require('stream');
+const { formidable } = require('formidable');
+const fs = require('fs');
+
+module.exports.config = {
+  api: { bodyParser: false, sizeLimit: '25mb' },
+  maxDuration: 60,
+};
+
+const BASE_URL = 'https://api.remaker.ai';
+const PRODUCT_CODE = '067003';
+const PRODUCT_SERIAL = 'd0556055c62201b80a956de9c4ad7d37';
+const MODEL_VERSION = '2';
+
+function makeHeaders(extra = {}) {
+  return Object.assign({
+    'user-agent': 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36',
+    'origin': 'https://remaker.ai',
+    'referer': 'https://remaker.ai/',
+    'product-code': PRODUCT_CODE,
+    'product-serial': PRODUCT_SERIAL,
+    'authorization': '',
+  }, extra);
+}
+
+// CREATE JOB — multipart file upload (bukan URL!)
+async function createJob(targetBuffer, swapBuffer) {
+  const form = new FormData();
+  form.append('target_image', Readable.from(targetBuffer), {
+    filename: 'target.jpg', contentType: 'image/jpeg',
+  });
+  form.append('swap_image', Readable.from(swapBuffer), {
+    filename: 'source.jpg', contentType: 'image/jpeg',
+  });
+  form.append('version', MODEL_VERSION); // WAJIB ada
+
+  const res = await axios.post(
+    BASE_URL + '/api/pai/v3/ai-facevary/appapi/create-job',
+    form,
+    {
+      headers: Object.assign({}, form.getHeaders(), makeHeaders()),
+      maxBodyLength: Infinity,
+      maxContentLength: Infinity,
+      timeout: 60000,
+    }
+  );
+
+  const data = res.data;
+  if (data.code !== 100000 || !data.result?.job_id) {
+    throw new Error('create-job gagal: ' + JSON.stringify(data).slice(0, 200));
+  }
+  return data.result.job_id;
+}
+
+// POLLING — 100002 & 300006 = masih proses
+async function waitForJob(jobId, maxWaitMs = 55000) {
+  const start = Date.now();
+  while (Date.now() - start < maxWaitMs) {
+    await new Promise(r => setTimeout(r, 4000));
+    const res = await axios.get(
+      BASE_URL + '/api/pai/v3/ai-facevary/appapi/get-job/' + jobId,
+      { headers: makeHeaders(), timeout: 30000 }
+    );
+    const d = res.data;
+    const urls = d.result?.output_image_url;
+    const msg = d.message?.en || '';
+
+    if (urls && urls.length > 0) return urls;
+    if (d.code === 100002 || d.code === 300006) continue;
+    if (d.code === 100000 && !urls) continue;
+
+    if (msg.includes('failed') || msg.includes('no face')) {
+      throw new Error('Job gagal: ' + msg);
+    }
+    throw new Error('Job error (code ' + d.code + '): ' + msg);
+  }
+  throw new Error('Timeout ' + maxWaitMs + 'ms');
+}
+
+// FETCH OUTPUT — CDN Remaker blok hotlink, jadi fetch pakai Referer
+async function fetchOutputAsDataUrl(url) {
+  const res = await axios.get(url, {
+    responseType: 'arraybuffer',
+    timeout: 30000,
+    headers: {
+      'Referer': 'https://remaker.ai/',
+      'Origin': 'https://remaker.ai',
+      'User-Agent': 'Mozilla/5.0',
+    },
+  });
+  const buf = Buffer.from(res.data);
+  const ct = res.headers['content-type'] || 'image/png';
+  return 'data:' + ct + ';base64,' + buf.toString('base64');
+}
+
+async function faceSwap(sourceBuffer, targetBuffer) {
+  const jobId = await createJob(targetBuffer, sourceBuffer);
+  const outputUrls = await waitForJob(jobId);
+  const outputDataUrl = await fetchOutputAsDataUrl(outputUrls[0]);
+  return { jobId, outputUrls, outputDataUrl };
+}
+
+// HANDLER
+module.exports = async function handler(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', '*');
+  if (req.method === 'OPTIONS') return res.status(204).end();
+  if (req.method !== 'POST') {
+    return res.status(405).json({ success: false, error: 'POST only' });
+  }
+
+  try {
+    const form = formidable({ maxFileSize: 15 * 1024 * 1024 });
+    const { files } = await new Promise((resolve, reject) => {
+      form.parse(req, (err, fields, files) => {
+        if (err) return reject(err);
+        resolve({ fields, files });
+      });
+    });
+
+    const source = files.source ? fs.readFileSync(files.source[0].filepath) : null;
+    const target = files.target ? fs.readFileSync(files.target[0].filepath) : null;
+    if (!source || !target) {
+      return res.status(400).json({ success: false, error: 'Butuh source + target' });
+    }
+
+    const result = await faceSwap(source, target);
+    return res.json({
+      success: true,
+      data: {
+        jobId: result.jobId,
+        outputUrls: result.outputUrls,
+        outputDataUrl: result.outputDataUrl,
+      },
+    });
+  } catch (err) {
+    console.error('[faceswap]', err.message);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+};
+*/
+
+// ============================================================
+// CATATAN PENTING:
+// 1. create-job TERIMA FILE LANGSUNG (multipart), bukan URL!
+//    Field: target_image + swap_image + version='2'
+// 2. Code 100002 & 300006 = MASIH PROSES, lanjut polling
+// 3. Product-serial fixed: d0556055c62201b80a956de9c4ad7d37
+// 4. CDN Remaker (cdn.rmimgs.com) BLOK hotlink — server
+//    harus fetch hasil pakai Referer: https://remaker.ai/
+//    lalu convert ke base64
+// 5. Client WAJIB compress gambar < 4.5 MB total (limit Vercel)
+// 6. maxDuration: 60s = limit Hobby plan Vercel
+// ============================================================`,
+    favorite: true,
+    createdAt: Date.now() - 86400000 * 1,
+    updatedAt: Date.now(),
+    views: 0
   }
 ];
