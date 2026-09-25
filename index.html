@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="google-site-verification" content="cOUaBWsIduZeFZPAq34JVxHRFZL3uQDj9YoCQF5_EwM" />
+<meta name="theme-color" content="#0a0a0f" />
+<meta name="description" content="Snippet Vault — kumpulan code snippet." />
+<meta name="author" content="xs0ciety"/>
+<link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="shortcut icon" href="/favicon.ico" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+<meta name="apple-mobile-web-app-title" content="xs0ciety-Scrape" />
+<link rel="manifest" href="/site.webmanifest" />
+<title>Snippet Vault — Code</title>
+<link rel="stylesheet" href="style.css" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🥶</text></svg>" />
+</head>
+<body data-perf="high">
+
+<div class="bg-layer" aria-hidden="true">
+  <div class="bg-grid"></div>
+  <div class="bg-glow bg-glow-1"></div>
+  <div class="bg-glow bg-glow-2"></div>
+  <div class="bg-particles" id="bgParticles"></div>
+</div>
+
+<header class="navbar" role="banner">
+  <div class="nav-container">
+    <a href="#/" class="nav-logo" aria-label="Home">
+      <span class="logo-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="16 18 22 12 16 6"></polyline>
+          <polyline points="8 6 2 12 8 18"></polyline>
+        </svg>
+      </span>
+      <span class="logo-text">Snippet<em>Vault</em></span>
+    </a>
+
+    <nav class="nav-links" aria-label="Main navigation">
+      <a href="#/" class="nav-link" data-route="/">Home</a>
+      <a href="#/snippets" class="nav-link" data-route="/snippets">Snippets</a>
+      <a href="#/categories" class="nav-link" data-route="/categories">Categories</a>
+      <a href="#/about" class="nav-link" data-route="/about">About</a>
+    </nav>
+
+    <div class="nav-actions">
+      <span class="admin-badge admin-only" id="adminBadge" hidden title="Klik untuk keluar admin">🔓 Admin</span>
+      <button class="nav-icon-btn" id="openSearch" aria-label="Buka pencarian" title="Search (/)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <circle cx="11" cy="11" r="7"></circle>
+          <path d="m21 21-4.3-4.3"></path>
+        </svg>
+      </button>
+      <button class="btn btn-primary btn-sm nav-create admin-only" data-action="create" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M12 5v14M5 12h14"/>
+        </svg>
+        <span class="hide-xs">Create</span>
+      </button>
+      <button class="nav-icon-btn nav-burger" id="burgerBtn" aria-label="Menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<div class="mobile-menu" id="mobileMenu" aria-hidden="true">
+  <a href="#/" class="mobile-link" data-route="/">Home</a>
+  <a href="#/snippets" class="mobile-link" data-route="/snippets">Snippets</a>
+  <a href="#/categories" class="mobile-link" data-route="/categories">Categories</a>
+  <a href="#/about" class="mobile-link" data-route="/about">About</a>
+  <button class="btn btn-primary mobile-create admin-only" data-action="create" hidden>+ Create Snippet</button>
+</div>
+<div class="mobile-overlay" id="mobileOverlay"></div>
+
+<main id="app" role="main">
+
+  <section class="view view-home is-active" data-view="home">
+    <div class="hero">
+      <div class="hero-content">
+        <div class="hero-badge">
+          <span class="pulse-dot"></span>
+          <span>v1.0 · Local-first</span>
+        </div>
+        <h1 class="hero-title">
+          Your Code,<br />
+          <span class="gradient-text">Organized.</span>
+        </h1>
+        <p class="hero-sub">
+          Kumpulan code snippet & downloader tools. Cepat, ringan,
+          jalan langsung di browser tanpa install apapun.
+        </p>
+        <div class="hero-actions">
+          <a href="#/snippets" class="btn btn-primary btn-lg">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <path d="M5 12h14M13 5l7 7-7 7"/>
+            </svg>
+            Explore Snippets
+          </a>
+          <button class="btn btn-ghost btn-lg admin-only" data-action="create" hidden>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <path d="M12 5v14M5 12h14"/>
+            </svg>
+            Create Snippet
+          </button>
+        </div>
+
+        <div class="hero-floaters" aria-hidden="true">
+          <div class="floater floater-1">
+            <div class="floater-head"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div>
+            <pre class="floater-code"><span class="tok-kw">const</span> <span class="tok-fn">vault</span> = <span class="tok-str">'ready'</span>;</pre>
+          </div>
+          <div class="floater floater-2">
+            <div class="floater-head"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div>
+            <pre class="floater-code"><span class="tok-cm">// 7 snippets</span><br/><span class="tok-kw">await</span> <span class="tok-fn">save</span>();</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="stats-strip">
+        <div class="stat">
+          <div class="stat-num" data-stat="total">0</div>
+          <div class="stat-label">Total Snippets</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num" data-stat="languages">0</div>
+          <div class="stat-label">Languages</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num" data-stat="favorites">0</div>
+          <div class="stat-label">Favorites</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num" data-stat="views">0</div>
+          <div class="stat-label">Total Views</div>
+        </div>
+      </div>
+    </div>
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <h2 class="section-title">Latest Snippets</h2>
+          <p class="section-sub">Terbaru dari vault</p>
+        </div>
+        <a href="#/snippets" class="link-arrow">Lihat semua →</a>
+      </div>
+      <div class="snippet-grid" id="homeGrid"></div>
+    </section>
+  </section>
+
+  <section class="view view-snippets" data-view="snippets">
+    <div class="page-head">
+      <h1 class="page-title">All Snippets</h1>
+      <p class="page-sub">Kelola semua kode di satu tempat.</p>
+    </div>
+
+    <div class="toolbar">
+      <div class="search-inline">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>
+        </svg>
+        <input type="search" id="searchInput" placeholder="Cari judul, tag, atau isi kode..." autocomplete="off" />
+        <button class="clear-btn" id="clearSearch" aria-label="Clear search" hidden>✕</button>
+      </div>
+    </div>
+
+    <div class="filter-bar" id="filterBar" role="tablist"></div>
+
+    <div class="snippet-grid" id="snippetGrid"></div>
+    <div class="state-block" id="snippetState" hidden></div>
+  </section>
+
+  <section class="view view-categories" data-view="categories">
+    <div class="page-head">
+      <h1 class="page-title">Categories</h1>
+      <p class="page-sub">Browse snippets berdasarkan bahasa pemrograman.</p>
+    </div>
+    <div class="cat-grid" id="catGrid"></div>
+  </section>
+
+  <section class="view view-about" data-view="about">
+    <div class="page-head">
+      <h1 class="page-title">About</h1>
+      <p class="page-sub">Tentang Snippet Vault</p>
+    </div>
+    <div class="about-card">
+      <h2>💎 Snippet Vault</h2>
+      <p>
+        Snippet Vault adalah aplikasi web ringan untuk menyimpan, mengelola,
+        dan membagikan potongan kode. Semua data disimpan di browser lo
+        menggunakan <code>localStorage</code>.
+      </p>
+      <h3>✨ Fitur</h3>
+      <ul>
+        <li>📝 Simpan snippet dengan syntax highlighting</li>
+        <li>🔍 Cari cepat berdasarkan judul, tag, atau isi kode</li>
+        <li>🏷️ Filter berdasarkan bahasa pemrograman</li>
+        <li>📋 Copy kode sekali klik</li>
+        <li>⭐ Tandai snippet sebagai favorit</li>
+        <li>📱 Responsive, smooth di HP Android</li>
+      </ul>
+      <h3>🛠️ Tech Stack</h3>
+      <p>HTML5 · CSS3 · Vanilla JavaScript. Zero dependencies.</p>
+    </div>
+  </section>
+
+  <section class="view view-detail" data-view="detail" id="detailView">
+    <button class="back-btn" data-action="back">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      Back
+    </button>
+    <div id="detailContent"></div>
+  </section>
+
+</main>
+
+<div class="search-overlay" id="searchOverlay" aria-hidden="true">
+  <div class="search-panel">
+    <div class="search-panel-head">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>
+      </svg>
+      <input type="search" id="searchOverlayInput" placeholder="Cari snippet..." autocomplete="off" />
+      <button class="kbd-btn" id="closeSearch">ESC</button>
+    </div>
+    <div class="search-results" id="searchResults"></div>
+    <div class="search-hint">↑↓ navigasi · Enter buka · Esc tutup</div>
+  </div>
+</div>
+
+<div class="modal" id="editorModal" aria-hidden="true" role="dialog" aria-modal="true">
+  <div class="modal-backdrop" data-action="close-modal"></div>
+  <div class="modal-panel">
+    <div class="modal-head">
+      <h2 id="editorTitle">Create Snippet</h2>
+      <button class="modal-close" data-action="close-modal" aria-label="Tutup">✕</button>
+    </div>
+    <form class="modal-body" id="editorForm">
+      <input type="hidden" id="editId" />
+      <div class="field">
+        <label for="fTitle">Title <span class="req">*</span></label>
+        <input type="text" id="fTitle" required maxlength="80" placeholder="Contoh: Smooth Scroll Utility" />
+      </div>
+      <div class="field">
+        <label for="fDesc">Description</label>
+        <input type="text" id="fDesc" maxlength="160" placeholder="Deskripsi singkat (opsional)" />
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label for="fLang">Language</label>
+          <select id="fLang">
+            <option value="javascript">JavaScript</option>
+            <option value="html">HTML</option>
+            <option value="css">CSS</option>
+            <option value="python">Python</option>
+            <option value="php">PHP</option>
+            <option value="json">JSON</option>
+            <option value="bash">Bash</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="fFile">Filename</label>
+          <input type="text" id="fFile" maxlength="60" placeholder="contoh.js" />
+        </div>
+      </div>
+      <div class="field">
+        <label for="fTags">Tags</label>
+        <input type="text" id="fTags" placeholder="pisahkan dengan koma: dom, utility" />
+      </div>
+      <div class="field">
+        <label for="fCode">Code <span class="req">*</span></label>
+        <textarea id="fCode" required rows="10" spellcheck="false" placeholder="// paste your code here..."></textarea>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" data-action="close-modal">Batal</button>
+        <button type="submit" class="btn btn-primary">Save Snippet</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="toast-stack" id="toastStack" aria-live="polite"></div>
+
+<div class="modal" id="confirmModal" aria-hidden="true" role="dialog" aria-modal="true">
+  <div class="modal-backdrop" data-action="close-confirm"></div>
+  <div class="modal-panel modal-panel-sm">
+    <div class="modal-head">
+      <h2 id="confirmTitle">Yakin?</h2>
+    </div>
+    <div class="modal-body">
+      <p id="confirmMsg">Tindakan ini tidak bisa dibatalkan.</p>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" data-action="close-confirm">Batal</button>
+        <button type="button" class="btn btn-danger" id="confirmOk">Hapus</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="admin-panel admin-only" id="adminPanel" hidden>
+  <button class="btn btn-ghost btn-sm" id="adminExport" title="Copy JSON semua snippet">
+    📋 Export JSON
+  </button>
+  <button class="btn btn-ghost btn-sm" id="adminReset" title="Reset ke data.js">
+    🔄 Reset
+  </button>
+</div>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+<script src="tracker.js"></script>
+</body>
+</html>
