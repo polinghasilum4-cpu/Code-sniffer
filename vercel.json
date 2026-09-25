@@ -6,5 +6,11 @@
       "memory": 1024,
       "maxDuration": 10
     }
-  }
+  },
+  "rewrites": [
+    {
+      "source": "/((?!api/|sitemap\\.xml|robots\\.txt|_next/|favicon\\.ico).*)",
+      "destination": "/index.html"
+    }
+  ]
 }
