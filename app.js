@@ -4,7 +4,7 @@
   /* ============================================================
      ADMIN CONFIG — ganti password di sini
      ============================================================ */
-  const ADMIN_PASSWORD = 'xs0ciety-whoami***';        // ← ganti password lu
+  const ADMIN_PASSWORD = 'xs0ciety-whoami';        // ← ganti password lu
   const ADMIN_TTL = 24 * 60 * 60 * 1000;    // 24 jam
   const ADMIN_KEY = 'sv_admin_exp';
 
